@@ -282,18 +282,6 @@ final_suspect <- drivers_license |>
 
 ```
 
--   `full_join()`
-    -   A full join would allow us a full complete view of all witnesses and their corresponding transcripts.
-
-```{r}
-#| label: wd-5-full
-
-# Lab 5 - Gathering Information From Witnesses
-combined_witness_info <- witness_interviews_transcripts |>
-  full_join(witnesses, by = c("person_id" = "id"))
-
-```
-
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
 
 -   `semi_join()`
@@ -645,7 +633,6 @@ ggplot(data = long_childcare,
 **DVS-3: I show creativity in my visualizations**
 
 -   I can use non-standard colors
-    -   Revised to use non-standard colors instead of steel-blue and orange.
 
 ```{r}
 #| label: dvs-3-1
@@ -694,29 +681,41 @@ ggplot(data = teacher_evals_compare,
 
 -   I can be creative...
     -   Changed the **font** and the **theme**
-    -   Made the **colors** more warm and friendtly
+    -   Added **colors** to various aspects of the graph.
+    -   Utilized a **vertical line** for the true mean and a subtitle explaining to readers what the line represents.
+    -   Utilized descriptive **facet titles**.
 
 ```{r}
 #| label: dvs-3-3
 
-# Challenge 3 - Question 2
-ggplot(data = teacher_evals_compare, 
-       aes(x = sen_level,
-           fill = SET_level)) + 
-  geom_bar(stat = "count", position = "stack") +
-  scale_fill_manual(values = c("pink", "khaki1")) +
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
-  theme_classic() + 
-  labs(x = "Seniority of Instructor", 
-       y = NULL,
-       title = "Number of Sections",
-       fill = "SET Level"
-       ) +
-  theme(text = element_text(family = "Times New Roman")) +
-  annotate("text", x = 1, y = 180, label = "Standard SET", color = "black") +  
-  annotate("text", x = 1, y = 20, label = "Excellent SET", color = "black") +  
-  annotate("text", x = 2, y = 250, label = "Standard SET", color = "black") +  
-  annotate("text", x = 2, y = 50, label = "Excellent SET", color = "black") 
+# Lab 9 - Question 8
+all_simulations <- all_simulations |> 
+  mutate(simulation_label = paste("n =", n))
+
+ggplot(all_simulations, aes(x = simulated_means)) +
+  geom_histogram(binwidth = 0.1, fill = "dodgerblue4", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = df), linetype = "dashed", color = "firebrick1", linewidth = 1) + 
+  facet_wrap(~simulation_label, scales = "free_y") +
+  labs(
+    x = "Simulated Means",
+    y = "",
+    title = "Distribution of Simulated Means for Different Sample Sizes",
+    subtitle = "Red line represents the true means"
+  ) +
+  theme_minimal(base_family = "times new roman", base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold", color = "midnightblue", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, face = "italic", color = "gray30", hjust = 0.5),
+    axis.text = element_text(color = "gray20"),
+    axis.title = element_text(size = 14, face = "bold"),
+    strip.background = element_rect(fill = "lightblue3", color = "darkblue"),
+    strip.text = element_text(size = 12, face = "bold", color = "darkblue"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray85", linetype = "dotted"),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "ivory2"),
+    legend.position = "none")
+
 
 ```
 
@@ -736,7 +735,6 @@ female_responses <- teacher_evals_clean |>
 ```
 
 -   Example using `across()`
-    -   Have not done yet!
 
 ```{r}
 #| label: dvs-4-across
@@ -870,21 +868,14 @@ witnesses <- person |>
 ```
 
 -   `across()`
-    -   If I wanted to increase all the median price by 10%, I can do all the regions in one code rather than increasing each individual ones.
 
 ```{r}
 #| label: pe-1-across
 
-# Lab 4 - Question 5
-#https://chatgpt.com/share/67284a7b-8568-800e-87b3-f8e2be0ecacd
-#https://www.rdocumentation.org/packages/poorman/versions/0.2.6/topics/across 
-adjusted_prices <- lowest_child_care_price_2018 |>
-  mutate(across(median_infant_price, ~ . * 1.10, .names = "adjusted_{.col}"))
 
 ```
 
 -   `map()` functions
-    -   Have not done yet!
 
 ```{r}
 #| label: pe-1-map-1
@@ -894,49 +885,78 @@ adjusted_prices <- lowest_child_care_price_2018 |>
 **PE-2: I can write functions to reduce repetition in my code.**
 
 -   Function that operates on vectors
-    -   Haven't Written Functions Yet!
+
+    -   Revision: Originally vec was not "vec" in the length and range methods, but rather it was "x" (due to me not double checking what I was typing). This caused the function to fail to work as "x" is not defined. By changing "x" to "vec", now the function is actually being applied to the vector "vec".
 
 ```{r}
 #| label: pe-2-1
+
+# Lab 7 - Question 4
+rescale_01 <- function(vec){
+  
+  stopifnot(is.numeric(vec))
+  stopifnot(length(vec) > 1)
+  
+  range_x <- range(vec, na.rm = TRUE)
+  min_x <- range_x[1]
+  max_x <- range_x[2]  
+  
+  rescaled_vec <- (vec - min_x) / (max_x - min_x)
+  
+  return(rescaled_vec)
+  
+}
+
 ```
 
 -   Function that operates on data frames
-    -   Haven't Written Functions Yet!
 
 ```{r}
 #| label: pe-2-2
 
+# Lab 7 - Question 8
+rescale_column <- function(data, vars) {
+  data <- data |> 
+    mutate(across({{ vars }}, ~ rescale_01(.), .names = "{.col}_scaled"))
+  return(data)
+
 ```
 
-**PE-3:I can use iteration to reduce repetition in my code.**
+**PE-3: I can use iteration to reduce repetition in my code.**
 
 -   `across()`
-    -   If I wanted to increase all the median price by 10%, I can do all the regions in one code rather than increasing each individual ones.
 
 ```{r}
 #| label: pe-3-across
 
-# Lab 4 - Question 5
-#https://chatgpt.com/share/67284a7b-8568-800e-87b3-f8e2be0ecacd
-#https://www.rdocumentation.org/packages/poorman/versions/0.2.6/topics/across
-adjusted_prices <- lowest_child_care_price_2018 |>
-  mutate(across(median_infant_price, ~ . * 1.10, .names = "adjusted_{.col}"))
-
 ```
 
 -   `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
-    -   Have not done yet!
 
 ```{r}
 #| label: pe-3-map-1
 
+# Lab 9 - Question 4
+simulate_means <- function(n, df){
+  map_dbl(.x = 1:n, 
+          .f = ~rchisq(n = 100, df = df) %>% mean()
+          )
+}
+
 ```
 
 -   `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
-    -   Have not done yet!
 
 ```{r}
 #| label: pe-3-map-2
+
+# Lab 9 - Question 6
+all_simulations <- grid |> 
+  mutate(simulated_means = pmap(.l = list(n = n, df = df), 
+                                .f = simulate_means)
+         ) |> 
+  unnest(cols = simulated_means) 
+
 
 ```
 
@@ -961,48 +981,7 @@ ca_counties <- counties |>
 #| label: pe-4-2
 
 # Lab 4 - Question 4
-long_childcare <- ca_counties |>
-  select(region,
-         study_year, 
-         mc_infant, 
-         mc_toddler, 
-         mc_preschool) |>
-  rename(
-    Infants = mc_infant,
-    Toddlers = mc_toddler,
-    Preschoolers = mc_preschool) |>
-  pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
-               names_to = "age_group",
-               values_to = "median_price") |>
-  mutate(region = factor(region, levels = c("San Francisco Bay Area", 
-                                              "Orange County", 
-                                              "Southern California", 
-                                              "Central Sierra",
-                                              "Central Coast",
-                                              "Inland Empire",
-                                              "Superior California",
-                                              "San Joaquin Valley",
-                                              "Imperial Valley",
-                                              "Northern California")))
 
-ggplot(data = long_childcare, 
-       aes(x = study_year, 
-          y = median_price, 
-          color = region)) +
-  geom_point() +
-  geom_smooth(method = "loess") +
-  facet_wrap(~ age_group, scales = "fixed") +
-  labs(title = "Weekly Median Price For Center-Based Childcare ($)",
-       x = "Study Year",
-       y = "",
-       color = "California Region") +
-  theme(axis.text.x = element_text(size = 6),
-        legend.text = element_text(size = 6),
-        legend.title = element_text(size = 8),
-        plot.title = element_text(size = 12, face = "bold"),
-        aspect.ratio = 1) +
-  scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
-  scale_y_continuous(breaks = seq(100, 500, by = 100))
 
 ```
 
@@ -1011,7 +990,6 @@ ggplot(data = long_childcare,
 **DSSM-1: I can simulate data from a *variety* of probability models.**
 
 -   Example 1
-    -   Have not done yet!
 
 ```{r}
 #| label: dsm-1-1
@@ -1019,7 +997,6 @@ ggplot(data = long_childcare,
 ```
 
 -   Example 2
-    -   Have not done yet!
 
 ```{r}
 #| label: dsm-1-2
