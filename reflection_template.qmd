@@ -35,7 +35,11 @@ evaluations <- read_csv(here("data", "teacher_evals.csv"))
 #| label: wd-1-xlsx
 
 # Check-in 2.3 - Question 5
-agesxl <- read_xlsx(path = here::here("check-ins", "2.1-loading-data", "Ages_Data", "ages.xlsx"), sheet = "ages")
+agesxl <- read_xlsx(path = here::here("check-ins", 
+                                      "2.1-loading-data", 
+                                      "Ages_Data", 
+                                      "ages.xlsx"), 
+                    sheet = "ages")
 ```
 
 -   `txt`
