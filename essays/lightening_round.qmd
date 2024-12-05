@@ -1,0 +1,27 @@
+---
+title: "Lightening Round Essays"
+format: html
+editor: visual
+---
+
+**Answer each of the following questions with *one sentence* including a brief explanation.**
+
+1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
+
+    > If Emi D. doesn't earn an A, then nobody should, because she efficiently adapts what she learned in past classes, always goes above and beyond like utilizing outside resources to face any difficulties, she might face, gives great peer review constructive feedback (was my peer reviewer twice), never hesitates to help, and is very open and communicative to discussions and new ideas.
+
+2.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
+
+    > The most difficult part of class was pivoting from wide graphs to long graphs and vice versa because for me personally, I was struggling to visualize how the data would look in each format, making it hard to decided what transformations were needed for the graphs to turn out right.
+
+3.  What was the easiest part of the class for you? Explain why.
+
+    > The easiest part of the class for me was the practice activities since the material was fresh in my head and working with a partner also made the process much easier!
+
+4.  What part of the class surprised or interested you the most? Explain why.
+
+    > The part of the class that interested me the most was Lab 5 (murder mystery) since it was a unstructured lab compared to other labs and solving puzzles mysteries have been a long interest of mine.
+
+5.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+
+    > Make sure to get a deep understanding on the foundational concepts, as they'll make everything else in the course easier to grasp... and best of luck!
