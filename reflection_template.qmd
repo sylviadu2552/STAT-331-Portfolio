@@ -36,7 +36,6 @@ evaluations <- read_csv(here("data", "teacher_evals.csv"))
 
 # Check-in 2.3 - Question 5
 agesxl <- read_xlsx(path = here::here("check-ins", "2.1-loading-data", "Ages_Data", "ages.xlsx"), sheet = "ages")
-
 ```
 
 -   `txt`
@@ -128,18 +127,21 @@ num_of_females <- teacher_evals_clean |>
 
 -   date (example must use functions from **lubridate**)
     -   Revised in Lab 5 to utilize lubridate
+    -   Used %within% to check if a date is the interval of concert dates.
 
 ```{r}
 #| label: wd-3-date
 
-# Lab 5 - Inspecting Crime Scene Report
-crime_scene_report <- crime_scene_report |>
-    mutate(date = ymd(date)) 
-
-crime_report_murder_sql_city <- crime_scene_report |>
-    filter(city == "SQL City", 
-           type == "murder",
-           date == "2018-01-15")
+# Lab 5 - Finding the New Suspect (Revised)
+concert_attendees <- facebook_event_checkin |>
+  mutate(date = ymd(date), 
+         concert_interval = interval(ymd("2017-12-01"), ymd("2017-12-31"))) |>
+  filter(event_name == "SQL Symphony Concert",
+         date %within% concert_interval) |>
+  group_by(person_id) |>
+  summarize(concert_count = n()) |>
+  filter(concert_count >= 3) |>
+  ungroup()
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -165,31 +167,6 @@ teacher_evals_compare <- teacher_evals_clean |>
 #| label: wd-4-string
 
 # Lab 4 - Question 3
-ca_counties <- ca_counties |> 
-  mutate(county_name = str_remove(county_name, " County")) |>
-  mutate(region = fct_collapse(county_name,
-                               "Superior California" = c("Butte", "Colusa", "El Dorado", "Glenn", "Lassen", 
-                                                         "Modoc", "Nevada", "Placer", "Plumas", 
-                                                         "Sacramento", "Shasta", "Sierra", 
-                                                         "Siskiyou", "Sutter", "Tehama", 
-                                                         "Yolo", "Yuba"),
-                               "Northern California" = c("Del Norte", "Humboldt", "Lake", "Mendocino", 
-                                                         "Napa", "Sonoma", "Trinity"),
-                               "San Francisco Bay Area" = c("Alameda", "Contra Costa", "Marin", 
-                                                             "San Francisco", "San Mateo", "Santa Clara", 
-                                                             "Solano"),
-                               "Central Sierra" = c("Alpine", "Amador", "Calaveras", "Madera", 
-                                                    "Mariposa", "Merced", "Mono", "San Joaquin", 
-                                                    "Stanislaus", "Tuolumne"),
-                               "Central Coast" = c("Monterey", "San Benito", 
-                                                   "San Luis Obispo", "Santa Barbara", 
-                                                   "Santa Cruz", "Ventura"),
-                               "San Joaquin Valley" = c("Fresno", "Inyo", "Kern", "Kings", "Tulare"),
-                               "Inland Empire" = c("Riverside", "San Bernardino"),
-                               "Southern California" = c("Los Angeles"),
-                               "Orange County" = c("Orange"),
-                               "Imperial Valley" = c("Imperial", "San Diego")
-  ))
 
 ```
 
@@ -229,16 +206,17 @@ ca_counties <- ca_counties |>
 
 -   date (example must use functions from **lubridate**)
     -   Revised in lab 5 to use lubridate and find the real suspect
+    -   Further revised to utilize an interval instead of checking by month and date separately. This makes it more readable as it is more clear that I am looking for dates within December 2017.
 
 ```{r}
 #| label: wd-4-date
 
-# Lab 5 - Finding the New Suspect
+# Lab 5 - Finding the New Suspect (Revised)
 concert_attendees <- facebook_event_checkin |>
-  mutate(date = ymd(date)) |>
+  mutate(date = ymd(date), 
+         concert_interval = interval(ymd("2017-12-01"), ymd("2017-12-31"))) |>
   filter(event_name == "SQL Symphony Concert",
-         month(date) == 12,
-         year(date) == 2017) |>
+         date %within% concert_interval) |>
   group_by(person_id) |>
   summarize(concert_count = n()) |>
   filter(concert_count >= 3) |>
@@ -410,11 +388,26 @@ witnesses <- person |>
 ```
 
 -   Example of function formatting
-    -   Have not done yet!
+    -   Renamed "range_x" to "range_vec" to make it more tidy and clear that the range referencing to the vector input. Same process was done for min and max.
 
 ```{r}
 #| label: r-2-3
 
+# Lab 7 - Question 4 (Revised)
+rescale_01 <- function(vec){
+  
+  stopifnot(is.numeric(vec))
+  stopifnot(length(vec) > 1)
+  
+  range_vec <- range(vec, na.rm = TRUE)
+  min_vec <- range_vec[1]
+  max_vec <- range_vec[2]  
+  
+  rescaled_vec <- (vec - min_x) / (max_x - min_x)
+  
+  return(rescaled_vec)
+  
+}
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
@@ -426,7 +419,7 @@ witnesses <- person |>
 ```{r}
 #| label: r-3-example
 
-# Lab 5 - Narrowing Down The Witnesses
+# Lab 5 - Narrowing Down The Witnesses (Revised)
 witnesses <- person |>
   filter((address_street_name == "Northwestern Dr") | 
          (address_street_name == "Franklin Ave" & str_detect(name, "Annabel"))) |>
@@ -442,6 +435,21 @@ witnesses <- person |>
 ```{r}
 #| label: r-3-function-stops
 
+# Lab 7 - Question 4 (Revised)
+rescale_01 <- function(vec){
+  
+  stopifnot(is.numeric(vec))
+  stopifnot(length(vec) > 1)
+  
+  range_vec <- range(vec, na.rm = TRUE)
+  min_vec <- range_vec[1]
+  max_vec <- range_vec[2]  
+  
+  rescaled_vec <- (vec - min_x) / (max_x - min_x)
+  
+  return(rescaled_vec)
+  
+}
 ```
 
 ## Data Visualization & Summarization
@@ -468,28 +476,24 @@ ggplot(data = surveys,
 ```
 
 -   at least one numeric variable and one categorical variable
+    -   Used the box plots from Lab 2 that was vertically stacked instead of horizontally stacked so readers don't have to tilt their head.
+    -   Removed the y - axis label since the title already explains the y-axis is and readers won't have to tilt their heads.
 
 ```{r}
 #| label: dvs-2-num-cat
 
-# Lab 2 - Question 10
+# Lab 2 - Question 16 (Revised)
 ggplot(data = surveys,
        mapping = aes(
-         x = species,
-         y = weight,
-         )
-      ) +
-  geom_boxplot(outliers = FALSE
-               ) + 
-  geom_jitter(alpha = 0.01,
-              color = 'steelblue'
-              ) + 
-  labs(x = "Species", 
-       y = " ",
+         x = weight,
+         y = species,
+         alpha = 0.01,)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_jitter(color = 'steelblue') + 
+  labs(x = "Weight", 
+       y = "",
        title = "Rodents Comparision by Species", 
-       subtitle = "The relationship of a Rodent's Weight and Hindfoot Length Based On Species") +
-  #https://ggplot2.tidyverse.org/reference/theme.html for reference
-  theme(axis.text.x = element_text(angle = 45))
+       subtitle = "The relationship of a Rodent's Weight and Hindfoot Length Based On Species")
 ```
 
 -   at least two categorical variables
@@ -515,10 +519,53 @@ ggplot(data = teacher_evals_compare,
 ```
 
 -   dates (timeseries plot)
-    -   Have not done yet!
 
 ```{r}
 #| label: dvs-2-date
+
+# Lab 4 - Question 6
+long_childcare <- ca_counties |>
+  select(region,
+         study_year, 
+         mc_infant, 
+         mc_toddler, 
+         mc_preschool) |>
+  rename(
+    Infants = mc_infant,
+    Toddlers = mc_toddler,
+    Preschoolers = mc_preschool) |>
+  pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
+               names_to = "age_group",
+               values_to = "median_price") |>
+  mutate(region = factor(region, levels = c("San Francisco Bay Area", 
+                                              "Orange County", 
+                                              "Southern California", 
+                                              "Central Sierra",
+                                              "Central Coast",
+                                              "Inland Empire",
+                                              "Superior California",
+                                              "San Joaquin Valley",
+                                              "Imperial Valley",
+                                              "Northern California")))
+
+ggplot(data = long_childcare, 
+       aes(x = study_year, 
+          y = median_price, 
+          color = region)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group, scales = "fixed") +
+  labs(title = "Weekly Median Price For Center-Based Childcare ($)",
+       x = "Study Year",
+       y = "",
+       color = "California Region") +
+  theme(axis.text.x = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 8),
+        plot.title = element_text(size = 12, face = "bold"),
+        aspect.ratio = 1) +
+  scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
+  scale_y_continuous(breaks = seq(100, 500, by = 100))
 
 ```
 
@@ -578,12 +625,12 @@ ggplot(data = long_childcare,
 ```
 
 -   I can reorder my legend to align with the colors in my plot
-    -   Reordered through refactoring the levels of region
+    -   Reordered through refactoring the levels of region with a function (and not hard coding the ordering)
 
 ```{r}
 #| label: dvs-2-3
 
-# Lab 4 - Question 6 
+# Lab 4 - Question 6 (Revised)
 long_childcare <- ca_counties |>
   select(region,
          study_year, 
@@ -597,16 +644,9 @@ long_childcare <- ca_counties |>
   pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
                names_to = "age_group",
                values_to = "median_price") |>
-  mutate(region = factor(region, levels = c("San Francisco Bay Area", 
-                                              "Orange County", 
-                                              "Southern California", 
-                                              "Central Sierra",
-                                              "Central Coast",
-                                              "Inland Empire",
-                                              "Superior California",
-                                              "San Joaquin Valley",
-                                              "Imperial Valley",
-                                              "Northern California")))
+  mutate(region = fct_reorder2(region, study_year, median_price))
+
+colors <- colorRampPalette(brewer.pal(8, "RdBu"))(10)
 
 ggplot(data = long_childcare, 
        aes(x = study_year, 
@@ -625,7 +665,8 @@ ggplot(data = long_childcare,
         plot.title = element_text(size = 12, face = "bold"),
         aspect.ratio = 1) +
   scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
-  scale_y_continuous(breaks = seq(100, 500, by = 100))
+  scale_y_continuous(breaks = seq(100, 500, by = 100)) + 
+  scale_color_manual(values = colors)
 
 
 ```
@@ -633,44 +674,72 @@ ggplot(data = long_childcare,
 **DVS-3: I show creativity in my visualizations**
 
 -   I can use non-standard colors
+    -   Used RColorBrewer Package
 
 ```{r}
 #| label: dvs-3-1
 
-# Challenge 3 - Question 2
-ggplot(data = teacher_evals_compare, 
-       aes(x = sen_level,
-           fill = SET_level)) + 
-  geom_bar(stat = "count", position = "stack") +
-  scale_fill_manual(values = c("darkslategray3", "firebrick1")) +
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
-  theme_minimal() + 
-  labs(x = "Seniority of Instructor", 
-       y = NULL,
-       title = "Number of Sections",
-       fill = "SET Level")
+# Lab 4 - Question 6 (Revised)
+long_childcare <- ca_counties |>
+  select(region,
+         study_year, 
+         mc_infant, 
+         mc_toddler, 
+         mc_preschool) |>
+  rename(
+    Infants = mc_infant,
+    Toddlers = mc_toddler,
+    Preschoolers = mc_preschool) |>
+  pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
+               names_to = "age_group",
+               values_to = "median_price") |>
+  mutate(region = fct_reorder2(region, study_year, median_price))
 
+colors <- colorRampPalette(brewer.pal(8, "Set3"))(10)
+
+ggplot(data = long_childcare, 
+       aes(x = study_year, 
+          y = median_price, 
+          color = region)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group, scales = "fixed") +
+  labs(title = "Weekly Median Price For Center-Based Childcare ($)",
+       x = "Study Year",
+       y = "",
+       color = "California Region") +
+  theme(axis.text.x = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 8),
+        plot.title = element_text(size = 12, face = "bold"),
+        aspect.ratio = 1) +
+  scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
+  scale_y_continuous(breaks = seq(100, 500, by = 100)) + 
+  scale_color_manual(values = colors)
 ```
 
 -   I can use annotations
     -   Revised to make use of annotations
+    -   Re-revised to remove the legend. The legend is useless and just takes up space when the annotations already provides the information needed to readers.
 
 ```{r}
 #| label: dvs-3-2
 
-#Challenge 3 - Question 2
+#Challenge 3 - Question 2 (Revised)
 ggplot(data = teacher_evals_compare, 
        aes(x = sen_level,
            fill = SET_level)) + 
   geom_bar(stat = "count", position = "stack") +
-  scale_fill_manual(values = c("steelblue", "orange3")) +
+  scale_fill_manual(values = c("pink", "khaki1")) +
   theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
-  theme_minimal()+
+  theme_classic() + 
   labs(x = "Seniority of Instructor", 
        y = NULL,
        title = "Number of Sections",
        fill = "SET Level"
        ) +
+  theme(text = element_text(family = "Times New Roman"),
+        legend.position = "none") +
   annotate("text", x = 1, y = 180, label = "Standard SET", color = "black") +  
   annotate("text", x = 1, y = 20, label = "Excellent SET", color = "black") +  
   annotate("text", x = 2, y = 250, label = "Standard SET", color = "black") +  
@@ -688,7 +757,7 @@ ggplot(data = teacher_evals_compare,
 ```{r}
 #| label: dvs-3-3
 
-# Lab 9 - Question 8
+# Lab 9 - Question 8 (Revised)
 all_simulations <- all_simulations |> 
   mutate(simulation_label = paste("n =", n))
 
@@ -722,9 +791,36 @@ ggplot(all_simulations, aes(x = simulated_means)) +
 **DVS-4: I can calculate numerical summaries of variables.**
 
 -   Example using `summarize()`
+    -   Revised and combined two separate summarize functions into one.
 
 ```{r}
 #| label: dvs-4-summarize
+
+# Lab 3 - Question 6 (Revised)
+unique_counts <- teacher_evals_clean |>
+  summarise(unique_instructors = n_distinct(teacher_id),
+            unique_courses = n_distinct(course_id))
+```
+
+-   Example using `across()`
+    -   Revised for more efficient and tidy coding. Removed the use of mutate() since summarise() is already calculating the missing values. Also changed the code so it didn't save to a variable as there was no need for me to save it as a result.
+
+```{r}
+#| label: dvs-4-across
+
+# Lab 7 - Question 1
+BlackfootFish |>
+  summarise(total_missing_observations = sum(if_any(everything(), is.na)), 
+            across(everything(), ~ sum(is.na(.)), .names = "missing_in_{.col}"))
+
+```
+
+**DVS-5: I can find summaries of variables across multiple groups.**
+
+-   Example 1
+
+```{r}
+#| label: dvs-5-1
 
 # Lab 3 - Question 12
 female_responses <- teacher_evals_clean |>
@@ -732,28 +828,6 @@ female_responses <- teacher_evals_clean |>
          academic_degree %in% c("dr", "prof")) |>
   group_by(teacher_id) |>
   summarise(avg_response_share = mean(resp_share))
-```
-
--   Example using `across()`
-
-```{r}
-#| label: dvs-4-across
-
-```
-
-**DVS-5: I can find summaries of variables across multiple groups.**
-
--   Example 1
-    -   Revised and combined two separate summarize functions into one
-
-```{r}
-#| label: dvs-5-1
-
-# Lab 3 - Question 6
-unique_counts <- teacher_evals_clean |>
-  summarise(unique_instructors = n_distinct(teacher_id),
-            unique_courses = n_distinct(course_id))
-
 ```
 
 -   Example 2
@@ -807,44 +881,19 @@ lowest_child_care_price_2018 <- ca_counties |>
 **DVS-7: I show creativity in my tables.**
 
 -   Example 1
-    -   Used the scales package to add **commas** to each numerical value in the table and added **row numbers** to the table
 
 ```{r}
 #| label: dvs-7-1
 
-# Lab 4 - Question 4
-library(scales)
 
-median_income_by_region <- ca_counties |>
-  filter(study_year %in% c(2008, 2018)) |>
-  group_by(region, study_year) |>   
-  summarise(median_income = median(mhi_2018), .groups = "drop") |> 
-  pivot_wider(names_from = study_year, 
-              values_from = median_income,
-              names_prefix = "Median Income ") |>
-  arrange(`Median Income 2018`) |>
-  mutate(
-    `Median Income 2008` = comma(`Median Income 2008`),
-    `Median Income 2018` = comma(`Median Income 2018`),
-    Row = row_number()
-  )
 ```
 
 -   Example 2
-    -   Added a descriptive stats like mean, min, and max for each region.
 
 ```{r}
 #| label: dvs-7-2
 
-lowest_child_care_price_2018 <- ca_counties |>
-  filter(study_year == 2018) |>
-  group_by(region) |>   
-  summarise(
-    median_infant_price = median(mc_infant, na.rm = TRUE),
-    mean_infant_price = mean(mc_infant, na.rm = TRUE),
-    min_infant_price = min(mc_infant, na.rm = TRUE),
-    max_infant_price = max(mc_infant, na.rm = TRUE),
-    .groups = "drop")
+
 ```
 
 ## Program Efficiency
@@ -880,6 +929,10 @@ witnesses <- person |>
 ```{r}
 #| label: pe-1-map-1
 
+# Lab 8 - Question 4
+missing_values <- map_int(fish, ~sum(is.na(.)))
+missing_table <- data.frame(Missing_Values = missing_values)         
+
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
@@ -891,15 +944,15 @@ witnesses <- person |>
 ```{r}
 #| label: pe-2-1
 
-# Lab 7 - Question 4
+# Lab 7 - Question 4 (Revised)
 rescale_01 <- function(vec){
   
   stopifnot(is.numeric(vec))
   stopifnot(length(vec) > 1)
   
-  range_x <- range(vec, na.rm = TRUE)
-  min_x <- range_x[1]
-  max_x <- range_x[2]  
+  range_vec <- range(vec, na.rm = TRUE)
+  min_vec <- range_vec[1]
+  max_vec <- range_vec[2]  
   
   rescaled_vec <- (vec - min_x) / (max_x - min_x)
   
@@ -994,12 +1047,41 @@ ca_counties <- counties |>
 ```{r}
 #| label: dsm-1-1
 
+# Lab 9 - Question 1
+randomBabies <- function(nBabies){
+
+  babies <- sample(1:nBabies, nBabies, replace = FALSE)
+  sum(babies == 1:nBabies)
+}
+
+set.seed(4869)
+results <- map_int(.x = 1:10000,
+                   .f = ~randomBabies(nBabies = 4)
+                   )
+
 ```
 
 -   Example 2
 
 ```{r}
 #| label: dsm-1-2
+
+# Lab 9 - Questions 4-6
+simulate_means <- function(n, df){
+  map_dbl(.x = 1:n, 
+          .f = ~rchisq(n = 100, df = df) %>% mean())
+}
+
+grid <- crossing(n = c(10, 100, 1000, 10000), 
+                 df = 10)
+
+all_simulations <- grid |> 
+  mutate(simulated_means = pmap(.l = list(n = n, df = df), 
+                                .f = simulate_means)
+         ) |> 
+  unnest(cols = simulated_means) 
+
+
 
 ```
 
