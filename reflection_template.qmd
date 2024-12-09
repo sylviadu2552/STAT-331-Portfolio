@@ -11,7 +11,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an B+.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an A.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -48,7 +48,10 @@ agesxl <- read_xlsx(path = here::here("check-ins",
 #| label: wd-1-txt
 
 # Check-in 2.3 - Question 3
-ages_tab <- read_table(file = here::here("Week 2", "Check-ins", "Ages_Data", "ages_tab.txt"))
+ages_tab <- read_table(file = here::here("Week 2", 
+                                         "Check-ins", 
+                                         "Ages_Data", 
+                                         "ages_tab.txt"))
 
 ```
 
@@ -77,19 +80,17 @@ long_childcare <- ca_childcare |>
 **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   numeric
+    -   Although not directly related to filtering the numeric data type, I utilized across in the mutate function to make the the code less repetitive and easier for readers to comprehend.
 
 ```{r}
 #| label: wd-3-numeric
 
-# Lab 3 - Question 5
+# Lab 3 - Question 5 (Revised)
 teacher_evals_clean <- evaluations |>
   rename(sex = gender) |>
   filter(no_participants >= 10) |>
-  mutate(question_no = as.integer(question_no),
-         no_participants = as.integer(no_participants),
-         seniority = as.integer(seniority), 
-         teacher_id = as.character(teacher_id),
-         course_id = as.character(course_id)) |>
+  mutate(across(c(question_no, no_participants, seniority), as.integer),
+         across(c(teacher_id, course_id), as.character)) |>
   select(course_id, 
          teacher_id, 
          question_no, 
@@ -126,7 +127,7 @@ num_of_females <- teacher_evals_clean |>
   mutate(sex = as.factor(sex)) |>
   filter(sex == "female")
 
-
+ 
 ```
 
 -   date (example must use functions from **lubridate**)
@@ -166,11 +167,22 @@ teacher_evals_compare <- teacher_evals_clean |>
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
+    -   Revised to utiliize the modification of a character type variable. I added an initials variable that gives the initials of a name. For example, the name "Annabel Miller" would return "AM".
 
 ```{r}
 #| label: wd-4-string
 
-# Lab 4 - Question 3
+# Lab 5 - Narrowing Down The Witnesses (Revised)
+witnesses <- person |>
+  filter((address_street_name == "Northwestern Dr") | 
+         (address_street_name == "Franklin Ave" & str_detect(name, "Annabel"))) |>
+  mutate(
+    initials = str_extract_all(name, "\\b[A-Z]") |> 
+      map_chr(paste0, collapse = "")) |>
+  group_by(address_street_name) |>
+  slice_max(order_by = address_number, n = 1, with_ties = FALSE) |>
+  ungroup()
+
 
 ```
 
@@ -241,15 +253,27 @@ ca_counties <- counties |>
 ```
 
 -   `right_join()`
-    -   Revised in Lab 5 to find who hired the initial suspect.
+    -   Revised in Lab 4 to better utilize right_join.
+        -   By using a right join, it ensures that all possible combinations of the study years (2008 and 2018) from the childcare_costs dataset remains, even if some are missing in the dataset ca_counties. This would be different from an inner join as an inner join would only include combinations that are included in both childcare_costs and ca_counties.
+            -   I wouldn't use an inner join here since some rows might be excluded, which would leave potential gaps in my analysis.
 
 ```{r}
 #| label: wd-5-right
 
-#Lab-5 - Finding the New Suspect
-new_suspects <- person |>
-  right_join(concert_attendees, by = c("id" = "person_id")) |>
-  inner_join(drivers_license,  by = c("license_id" = "id"))
+# Lab 4 - Question 4 (Revised)
+median_income_by_region <- childcare_costs |>
+  filter(state_name == "California" & study_year %in% c(2008, 2018)) |>
+  right_join(ca_counties, by = c("county_fips_code", "region")) |>
+  group_by(region, study_year) |>
+  summarise(median_income = median(mhi_2018, na.rm = TRUE), .groups = "drop") |> 
+  pivot_wider(names_from = study_year, 
+              values_from = median_income,
+              names_prefix = "Median Income ") |>
+  arrange(`Median Income 2018`) |>
+  mutate(
+    `Median Income 2008` = comma(`Median Income 2008`),
+    `Median Income 2018` = comma(`Median Income 2018`)
+  )
 ```
 
 -   `inner_join()`
@@ -345,11 +369,11 @@ median_income_by_region <- ca_counties |>
 
 **R-1: I can create professional looking, reproducible analyses using RStudio projects, Quarto documents, and the here package.**
 
-I've done this in the following provided assignments:
+I believe I've done this consistently throughout the assignments and lab in class as I ensure all file paths are related to the project directory, which is organized into sub-folders for easier reproducibility. I also ensure the rendered document looks good by utilizing YAML options as needed. An example of this that I utilized often was "echo: true" to make sure the code shows in the rendered document and "embed-resources: true" to make sure visuals like tables and plots are added directly to the rendered document. One specific lab that I'm extremely proud of in terms of reproducibility is:
 
 -   Lab 5
 
-    -   I believe that the headings and line breaks made the formatting cleaner, allowing readers to follow along the steps of solving the crime more easily.
+    -   I believe that with the additional touch of headings and line breaks, the formatting was much cleaner, allowing readers to follow along the steps of solving the crime more easily.
 
 **R-2: I can write well documented and tidy code.**
 
@@ -434,7 +458,6 @@ witnesses <- person |>
 ```
 
 -   Example of function stops
-    -   Have not done yet!
 
 ```{r}
 #| label: r-3-function-stops
@@ -527,7 +550,7 @@ ggplot(data = teacher_evals_compare,
 ```{r}
 #| label: dvs-2-date
 
-# Lab 4 - Question 6
+# Lab 4 - Question 6 (Revised)
 long_childcare <- ca_counties |>
   select(region,
          study_year, 
@@ -541,16 +564,9 @@ long_childcare <- ca_counties |>
   pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
                names_to = "age_group",
                values_to = "median_price") |>
-  mutate(region = factor(region, levels = c("San Francisco Bay Area", 
-                                              "Orange County", 
-                                              "Southern California", 
-                                              "Central Sierra",
-                                              "Central Coast",
-                                              "Inland Empire",
-                                              "Superior California",
-                                              "San Joaquin Valley",
-                                              "Imperial Valley",
-                                              "Northern California")))
+  mutate(region = fct_reorder2(region, study_year, median_price))
+
+colors <- colorRampPalette(brewer.pal(8, "RdBu"))(10)
 
 ggplot(data = long_childcare, 
        aes(x = study_year, 
@@ -569,7 +585,9 @@ ggplot(data = long_childcare,
         plot.title = element_text(size = 12, face = "bold"),
         aspect.ratio = 1) +
   scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
-  scale_y_continuous(breaks = seq(100, 500, by = 100))
+  scale_y_continuous(breaks = seq(100, 500, by = 100)) + 
+  scale_color_manual(values = colors)
+
 
 ```
 
@@ -724,7 +742,7 @@ ggplot(data = long_childcare,
 
 -   I can use annotations
     -   Revised to make use of annotations
-    -   Re-revised to remove the legend. The legend is useless and just takes up space when the annotations already provides the information needed to readers.
+        -   Re-revised to remove the legend. The legend is useless and just takes up space when the annotations already provides the information needed to readers.
 
 ```{r}
 #| label: dvs-3-2
@@ -812,7 +830,7 @@ unique_counts <- teacher_evals_clean |>
 ```{r}
 #| label: dvs-4-across
 
-# Lab 7 - Question 1
+# Lab 7 - Question 1 (Revised)
 BlackfootFish |>
   summarise(total_missing_observations = sum(if_any(everything(), is.na)), 
             across(everything(), ~ sum(is.na(.)), .names = "missing_in_{.col}"))
@@ -873,31 +891,102 @@ median_income_by_region <- ca_counties |>
 ```{r}
 #| label: dvs-6-2
 
+# Lab 4 - Question 5
 lowest_child_care_price_2018 <- ca_counties |>
   filter(study_year == 2018) |>
   group_by(region) |>   
   summarise(median_infant_price = median(mc_infant)) 
-
-
 
 ```
 
 **DVS-7: I show creativity in my tables.**
 
 -   Example 1
+    -   Revised to add colors to my original challenge 9 table
 
 ```{r}
 #| label: dvs-7-1
 
+# Lab 9 - Question 2 (Revised)
+results_df <- enframe(results, 
+                      name = "simulation_number", 
+                      value = "ncorrect")
+prop <- results_df |>
+  count(ncorrect, name = "Count") |>
+  mutate(proportion = Count / sum(Count))
 
+prop_table <- prop |>
+  select(ncorrect, proportion) |>
+  pivot_wider(names_from = ncorrect, 
+              values_from = proportion,
+              names_prefix = "Number Correct: ")
+
+# Challenge 9
+prop_table |> 
+  gt() |>
+  tab_header(
+    title = "Proportion of Simulations with Correct Number of Babies",
+    subtitle = "Summary of proportions for 0, 1, 2, 3, and 4 correct returns"
+  ) |> 
+  tab_style(
+    style = list(
+      cell_text(font = "Times New Roman", size = 14, color = "black")
+    ),
+    locations = cells_body()
+  ) |>
+  tab_style(
+    style = list(
+      cell_borders(side = "all", color = "black", weight = 1)
+    ),
+    locations = cells_body()
+  ) |> 
+  tab_style(
+    style = list(
+      cell_fill(color = "lightgrey")  
+    ),
+    locations = cells_body()
+  ) |> 
+  tab_style(
+    style = list(
+      cell_fill(color = "paleturquoise3") 
+    ),
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = list(
+      cell_fill(color = "lightblue3") 
+    ),
+    locations = cells_title()
+  ) |>
+  tab_style(
+    style = list(
+      cell_borders(side = "bottom", color = "black", weight = 2)
+    ),
+    locations = cells_column_labels()
+  ) |> 
+  fmt_percent(
+    columns = starts_with("Number Correct: "),
+    decimals = 2
+  )
 ```
 
 -   Example 2
+    -   Revised to add a table header, change the overall font size, and style the column labels.
 
 ```{r}
 #| label: dvs-7-2
 
+# Lab 8 - Question 4
+missing_values <- map_int(fish, ~sum(is.na(.)))
+missing_table <- data.frame(Missing_Values = missing_values)            
 
+#Challenge 9 (Revised)
+missing_table |> 
+  kable(col.names = c("Variable Name", "Missing Values"), 
+        format = "html") |> 
+  row_spec(0, bold = TRUE, color = "black", background = "grey80") |>  
+  kable_styling(font_size = 10) |>
+  add_header_above(c("Missing Data Information" = 2))
 ```
 
 ## Program Efficiency
@@ -925,6 +1014,12 @@ witnesses <- person |>
 ```{r}
 #| label: pe-1-across
 
+# Lab 7 - Question 8
+rescale_column <- function(data, vars) {
+  data <- data |> 
+    mutate(across({{ vars }}, ~ rescale_01(.), .names = "{.col}_scaled"))
+  return(data)
+}
 
 ```
 
@@ -976,6 +1071,7 @@ rescale_column <- function(data, vars) {
   data <- data |> 
     mutate(across({{ vars }}, ~ rescale_01(.), .names = "{.col}_scaled"))
   return(data)
+}
 
 ```
 
@@ -985,6 +1081,13 @@ rescale_column <- function(data, vars) {
 
 ```{r}
 #| label: pe-3-across
+
+# Lab 7 - Question 8
+rescale_column <- function(data, vars) {
+  data <- data |> 
+    mutate(across({{ vars }}, ~ rescale_01(.), .names = "{.col}_scaled"))
+  return(data)
+}
 
 ```
 
@@ -1020,29 +1123,63 @@ all_simulations <- grid |>
 **PE-4: I can use modern tools when carrying out my analysis.**
 
 -   I can use functions which are not superseded or deprecated
-    -   Using **\|\>** instead of **%\>%**
+    -   Using if_any() replaces the use of filter(across()), which is superseded.
 
 ```{r}
 #| label: pe-4-1
 
-# Lab 4 - Question 2
-ca_counties <- counties |>
-  filter(state_name == "California") |>
-  left_join(childcare_costs, by = "county_fips_code")
+# Lab 3 - Question 7
+missing_values <- teacher_evals_clean |>
+  filter(if_any(everything(), is.na))
 
 ```
 
 -   I can connect a data wrangling pipeline into a `ggplot()`
+    -   Connected my pipeline code block with my ggplot code block using a pipe. This allows for my desired result to output in one code block and only refer to the dataframe once instead of referring to it both in the pipeline and the ggplot.
 
 ```{r}
 #| label: pe-4-2
 
-# Lab 4 - Question 4
+# Lab 4 - Question 6 (Revised)
+colors <- colorRampPalette(brewer.pal(8, "Set3"))(10)
+
+ca_counties |>
+  select(region,
+         study_year, 
+         mc_infant, 
+         mc_toddler, 
+         mc_preschool) |>
+  rename(
+    Infants = mc_infant,
+    Toddlers = mc_toddler,
+    Preschoolers = mc_preschool) |>
+  pivot_longer(cols = c(Infants, Toddlers, Preschoolers),
+               names_to = "age_group",
+               values_to = "median_price") |>
+  mutate(region = fct_reorder2(region, study_year, median_price)) |>
+  ggplot(aes(x = study_year, 
+          y = median_price, 
+          color = region)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group, scales = "fixed") +
+  labs(title = "Weekly Median Price For Center-Based Childcare ($)",
+       x = "Study Year",
+       y = "",
+       color = "California Region") +
+  theme(axis.text.x = element_text(size = 6),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 8),
+        plot.title = element_text(size = 12, face = "bold"),
+        aspect.ratio = 1) +
+  scale_x_continuous(breaks = seq(2008, 2018, by = 2)) +
+  scale_y_continuous(breaks = seq(100, 500, by = 100)) + 
+  scale_color_manual(values = colors)
 
 
 ```
 
-## Data Simulation & Statisical Models
+## Data Simulation & Statistical Models
 
 **DSSM-1: I can simulate data from a *variety* of probability models.**
 
@@ -1097,7 +1234,8 @@ all_simulations <- grid |>
 #| label: dsm-2-1
 
 # Challenge 3 - Question 3
-chisq_result <- chisq.test(teacher_evals_compare$SET_level, teacher_evals_compare$sen_level)
+chisq_result <- chisq.test(teacher_evals_compare$SET_level, 
+                           teacher_evals_compare$sen_level)
 
 ```
 
@@ -1118,7 +1256,7 @@ reg_mod1 <- lm(mc_infant ~ mhi_2018, data = ca_counties)
 
 <!-- For the revisions included in your Portfolio, to help me understand the nature of your revisions, please denote somehow the feedback I provided you (e.g., boldface, italics, colored text) before your revisions. -->
 
-Throughout the course, I submitted revisions for each lab and I keep the previous lab's revisions in mind and make sure to apply it in the future assignments. For example, during earlier labs, I was confused about various YAML formatting. After a lab or two, I learned to always code-fold, use message: false to avoid warning message cluttering, and how to make sure my graphs shows in the rendering. I also fixed any code that could've been better, even if it was given a S, so I can get in the habit of better formatting. <br><br>
+Throughout the course, I submitted revisions for each lab and I keep the previous lab's revisions in mind and make sure to apply it in the future assignments. For example, during earlier labs, I was confused about various YAML formatting. After a lab or two, I learned to always code-fold, use message: false to avoid warning message cluttering, and how to make sure my graphs shows in the rendering. I also fixed any code that could've been better, even if it was given a S, so I can get in the habit of better formatting. A consistent improvement I keep forgetting about at first was creating objects that didn't actually need to be created. By the last few weeks, I remembered to apply it and made sure I wasn't creating objects unnecessarily. <br><br>
 
 For the Portfolio, I revised syntax from older labs that I noticed could be formatted better. For example, in objective r-2-1, I noticed there was a random extra comma, and my parentheses weren't formatted well, so I chose to revise it here. I also revised to make use of functions I didn't get to use in the lab.
 
@@ -1126,9 +1264,9 @@ For the Portfolio, I revised syntax from older labs that I noticed could be form
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
-Throughout the course, I did the challenges, and also took what I learned in this class to my Stat 305 class! For a project, we had to make a graph, and if we knew ggplot, we were given the option to use it if we want. <br><br>
+Throughout the course, I did the challenges, and also took what I learned in this class to my Stat 305 class! For a project, we had to make a graph, and if we knew ggplot, we were given the option to use it if we want. I also learned how to better utilize the resources provided to us, which helped a lot when I was creating tables for challenge 9. <br><br>
 
-For the portfolio, although we didn't learn across yet, I used resources like ChatGPT and R Documentation to learn how the across function works. I also made revisions and provided hypothetical examples to utilize some of the functions we haven't used yet, like anti_join or full_join.
+For the portfolio parts that we didn't learn yet for the midterm, although we didn't learn across yet, I used resources like ChatGPT and R Documentation to learn how the across function works. I also made revisions and provided hypothetical examples to utilize some of the functions we haven't used yet, like anti_join or full_join.
 
 ## Peer Support & Collaboration
 

@@ -15,3 +15,35 @@ As we’ve said in the class efficiency is a pivotal component of statistical co
 -   Why is efficiency important?
 
 -   Where did you encounter efficiency, and what were some [“a-ha” moments](https://www.merriam-webster.com/dictionary/aha%20moment) you had about efficiency? (For the latter, tie each a-ha moment to an artifact in the portfolio.)
+
+In statistical computing and data science, efficiency is using your resources to reach your desired outcome in a fast way while making sure not to compromise the accuracy of your process. This typically means minimizing redundancy and utilizing fewer resources to achieve a goal. In the fields of statisical computing or data science, efficiency could look like using methods that reduces computation time. For example, one could use a function that intakes a vector parameter rather than using loops. This would speed up the time it would take for a software to process the data. Furthermore, using clean and concise code helps with efficiency as it ensures that the code runs smoothly and makes it easier to find mistakes or bugs. It also allows the reader to more easily understand what the code is aiming to do. <br>
+
+Efficiency allows for one to handle larger data sets and faster processing times. In broader terms, where computational resources might be costly, efficiency can also help save on financial expenses. With efficiency, productivity is maximized and time is saved. This is especially important in fields like health-care which timely decision-making is crucial. <br>
+
+Throughout the class this year, I've encountered efficiency quite a few times. Some moments that are memorable are: wd-3-numeric
+
+> teacher_evals_clean \<- evaluations \|\>
+>
+> rename(sex = gender) \|\>
+>
+> filter(no_participants \>= 10) \|\>
+>
+> mutate(across(c(question_no, no_participants, seniority), as.integer),
+>
+> across(c(teacher_id, course_id), as.character))
+
+At first I manually mutated each variable to be an integer type or character type. However, after revising the portfolio, I realized I can utilize across to apply the same transformation to multiple variables at one. This reduced the length of my code while also making it more adaptable to changes if I wanted to transform more variables. <br>
+
+Another example of when I realized I can be more efficient is in pe-1:
+
+> witnesses \<- person \|\>
+>
+> filter((address_street_name == "Northwestern Dr") \|
+>
+> (address_street_name == "Franklin Ave" & str_detect(name, "Annabel"))) \|\>
+>
+> group_by(address_street_name) \|\>
+>
+> slice_max(order_by = address_number, n = 1, with_ties = FALSE) \|\> ungroup()
+
+When I first did the lab, I had two separate pipelines, making two separate witness objects. However, I then realized I could consolidate the two pipelines into one by listing all the conditions into one filter method. This helped reduce redundancy in my code and all the relevant information can be found in one place.

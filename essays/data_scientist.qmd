@@ -9,3 +9,47 @@ editor: visual
 -   Focus specifically on data science concepts and the skills we employed in learning them, not a laundry list of topics that you learned (those are in the syllabus, so I know them already).
 
 -   Focus on a small number of specific areas of growth for you that happened in STAT 331. Identify at least one artifact in your portfolio that illustrates each area of growth and explain how this artifact shows growth in the way you are describing.
+
+Through STAT 331, I think I learned a lot and grew as a practitioner and student of data science this quarter. At the beginning, I was only familiar with basic R commands and could only produce basic numerical summaries and graphs from a simple dataset. Over time, as I learned data wrangling and manipulation skills such as functions in the dplyr package like pivoting and joining. This allowed for me to make better visualizations to help readers understand more easily and combine various data sources to obtain deeper insights on the data. An example of this is showcased in WD-7:
+
+> median_income_by_region \<- ca_counties \|\>
+>
+> filter(study_year %in% c(2008, 2018)) \|\>
+>
+> group_by(region, study_year) \|\>
+>
+> summarise(median_income = median(mhi_2018), .groups = "drop") \|\>
+>
+> pivot_wider(names_from = study_year,
+>
+> values_from = median_income,
+>
+> names_prefix = "Median Income ") \|\>
+>
+> arrange(\`Median Income 2018\`)
+
+By pivoting wider, the data is displayed with separate columns for 2008 and 2018. This makes it easier to create visualizations like bar plots which can compare 2008 vs. 2018 incomes across regions. Through this, I've learned how important data transformations can be to finding meaningful insights and creating engaging visualizations. <br><br>
+
+On the topic of visualization, I think the biggest thing I learned and can take away from this class is how to create engaging visualizations that can portray information creatively. Initially, my visualizations lacked clarity and had repetitive information that cluttered the visualization. However, through ggplot2, I learned how to create impactful visualizations that emphasizes the key insights while also ensuring they're fun and engaging to look at. An example of this is showcased in DVS-3-3:
+
+> all_simulations \<- all_simulations \|\> mutate(simulation_label = paste("n =", n))
+>
+> ggplot(all_simulations, aes(x = simulated_means)) +
+>
+> geom_histogram(binwidth = 0.1, fill = "dodgerblue4", color = "black", alpha = 0.7) +
+>
+> ...
+
+This visualization I created included 4 distribution graphs in a 2x2 format. I used multiple colors to make the distribution itself stand out more. I also used a red vertical line to highlight a key point I was trying to express, where the true mean lies in a distribution. This allows for readers to better understand what the graph is trying to tell them rather than having them spend time figuring it out themselves. <br><br>
+
+Lastly, throughout the quarter, I learned how to improve program efficiency. This was portrayed through writing more concise code that can be reused and designing functions that can operate consistently across different types of input. An example of this is showcased in PE-2-2:
+
+> rescale_column \<- function(data, vars) {
+>
+> data \<- data \|\>
+>
+> mutate(across({{ vars }}, \~ rescale_01(.), .names = "{.col}\_scaled")) \]
+>
+> return(data) }\
+
+This function applies the rescaling operation to a specified of any dataframe, eliminating the need to manually repeat the scaling operation for each dataframe. This minimizes my code, making it easier to read, while also reducing the chances of my code erroring. This will definitely be a practice I'll often apply in the future.
